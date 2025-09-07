@@ -41,7 +41,7 @@ pipeline {
             steps {
                 deploy adapters: [
                     tomcat9(
-                        credentialsId: "${TOMCAT_CRED}",
+                        credentialsId: "${TOMCAT_CREDS}",
                         url: "${TOMCAT_URL}",
                         path: "${CONTEXT_PATH}"
                     )
@@ -63,3 +63,4 @@ pipeline {
         }
     }
 }
+
