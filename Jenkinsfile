@@ -1,22 +1,21 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven3'
-        jdk 'JDK17'
+    environment {
+        // Set JDK17 and Maven from Jenkins global tools
+        JAVA_HOME = tool name: 'JDK17', type: 'jdk'
+        MAVEN_HOME = tool name: 'Maven3', type: 'maven'
+        PATH = "${JAVA_HOME}/bin:${MAVEN_HOME}/bin:${env.PATH}"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: '*/feature/devops-setup']],
-                    userRemoteConfigs: [[
-                        url: 'git@github.com:SamuelFregene/NumberGuessGame.git',
-                        credentialsId: 'github-ssh-key'
-                    ]]
-                ])
+                git(
+                    url: 'git@github.com:SamuelFregene/NumberGuessGame.git',
+                    branch: 'feature/devops-setup',
+                    credentialsId: 'github-ssh-key'
+                )
             }
         }
 
@@ -34,18 +33,26 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                deploy adapters: [tomcat9(credentialsId: 'tomcat-creds',
-                                          path: '',
-                                          url: 'http://localhost:8081')],
-                       contextPath: 'NumberGuessGame',
-                       war: '**/target/*.war'
+                // Ensure the "Deploy to Container Plugin" is installed
+                deploy adapters: [tomcat9(
+                                    credentialsId: 'tomcat-creds',
+                                    url: 'http://localhost:8081/manager/text'
+                                  )],
+                       contextPath: '/NumberGuessGame',
+                       war: 'target/*.war'
             }
         }
     }
 
     post {
         always {
-            archiveArtifacts artifacts: '**/target/*.war', followSymlinks: false
+            archiveArtifacts artifacts: 'target/*.war', allowEmptyArchive: true
+        }
+        success {
+            echo 'Build, Test, and Deploy completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
         }
     }
 }
