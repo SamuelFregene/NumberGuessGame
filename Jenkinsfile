@@ -6,6 +6,12 @@ pipeline {
         JAVA_HOME = tool name: 'JDK17', type: 'jdk'
         MAVEN_HOME = tool name: 'Maven3', type: 'maven'
         PATH = "${JAVA_HOME}/bin:${MAVEN_HOME}/bin:${env.PATH}"
+
+        // Tomcat deployment settings
+        TOMCAT_URL = "http://3.17.71.244:8081/manager/text"
+        TOMCAT_CRED = "tomcat-creds" // Jenkins credentials ID for Tomcat
+        CONTEXT_PATH = "/NumberGuessGame"
+        WAR_FILE = "target/NumberGuessGame-1.0-SNAPSHOT.war"
     }
 
     stages {
@@ -31,15 +37,16 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to Tomcat') {
             steps {
-                // Ensure the "Deploy to Container Plugin" is installed
-                deploy adapters: [tomcat9(
-                                    credentialsId: 'tomcat-creds',
-                                    url: 'http://localhost:8081/manager/text'
-                                  )],
-                       contextPath: '/NumberGuessGame',
-                       war: 'target/*.war'
+                deploy adapters: [
+                    tomcat9(
+                        credentialsId: "${TOMCAT_CRED}",
+                        url: "${TOMCAT_URL}",
+                        path: "${CONTEXT_PATH}"
+                    )
+                ],
+                war: "${WAR_FILE}"
             }
         }
     }
@@ -52,7 +59,7 @@ pipeline {
             echo 'Build, Test, and Deploy completed successfully!'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo 'Pipeline failed! Check logs for details.'
         }
     }
 }
