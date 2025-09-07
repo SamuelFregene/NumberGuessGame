@@ -41,9 +41,9 @@ pipeline {
             steps {
                 deploy adapters: [
                     tomcat9(
-                        credentialsId: "${TOMCAT_CREDS}",
-                        url: "${TOMCAT_URL}",
-                        path: "${CONTEXT_PATH}"
+                        credentialsId: "${tomcat-creds}",
+                        url: "${http://3.17.71.244:8081/manager/text}",
+                        path: "${NumberGuessGame}"
                     )
                 ],
                 war: "${WAR_FILE}"
@@ -63,4 +63,5 @@ pipeline {
         }
     }
 }
+
 
