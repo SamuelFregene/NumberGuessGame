@@ -6,19 +6,19 @@ pipeline {
         jdk 'JDK17'
     }
 
-    stage('Checkout') {
-    steps {
-        checkout([
-            $class: 'GitSCM',
-            branches: [[name: '*/feature/devops-setup']],
-            userRemoteConfigs: [[
-                url: 'git@github.com:SamuelFregene/NumberGuessGame.git',
-                credentialsId: 'github-ssh-key'
-            ]]
-        ])
-    }
-}
-
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/feature/devops-setup']],
+                    userRemoteConfigs: [[
+                        url: 'git@github.com:SamuelFregene/NumberGuessGame.git',
+                        credentialsId: 'github-ssh-key'
+                    ]]
+                ])
+            }
+        }
 
         stage('Build') {
             steps {
@@ -48,6 +48,4 @@ pipeline {
             archiveArtifacts artifacts: '**/target/*.war', followSymlinks: false
         }
     }
-
-
-
+}
