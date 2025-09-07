@@ -9,7 +9,8 @@ pipeline {
 
         // Tomcat deployment settings
         TOMCAT_URL = "http://3.17.71.244:8081/manager/text"
-        TOMCAT_CRED = "tomcat-creds" // Jenkins credentials ID for Tomcat
+        TOMCAT_USER = "tomcat"
+        TOMCAT_PASS = "s3cret"
         CONTEXT_PATH = "/NumberGuessGame"
         WAR_FILE = "target/NumberGuessGame-1.0-SNAPSHOT.war"
     }
@@ -39,14 +40,12 @@ pipeline {
 
         stage('Deploy to Tomcat') {
             steps {
-                deploy adapters: [
-                    tomcat9(
-                        credentialsId: "${TOMCAT_CRED}",
-                        url: "${TOMCAT_URL}",
-                        path: "${CONTEXT_PATH}"
-                    )
-                ],
-                war: "${WAR_FILE}"
+                sh """
+                    echo "Deploying WAR to Tomcat..."
+                    curl --upload-file ${WAR_FILE} \
+                        --user ${TOMCAT_USER}:${TOMCAT_PASS} \
+                        "${TOMCAT_URL}/deploy?path=${CONTEXT_PATH}&update=true"
+                """
             }
         }
     }
